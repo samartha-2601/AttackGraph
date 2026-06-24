@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -23,9 +24,30 @@ from app.api.finding_details import (
 from app.api.dashboard import (
     router as dashboard_router
 )
+from app.api.attack_paths import (
+    router as attack_path_router
+)
+
+from app.api.latest_findings import (
+    router as latest_findings_router
+)
+
+from app.api.ai_attack_paths import (
+    router as ai_attack_path_router
+)
 
 app = FastAPI(
     title="AttackGraph AI"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 init_db()
@@ -76,6 +98,24 @@ app.include_router(
     dashboard_router,
     prefix="/dashboard",
     tags=["Dashboard"]
+)
+
+app.include_router(
+    attack_path_router,
+    prefix="/attack-paths",
+    tags=["Attack Paths"]
+)
+
+app.include_router(
+    latest_findings_router,
+    prefix="/findings/latest",
+    tags=["Latest Findings"]
+)
+
+app.include_router(
+    ai_attack_path_router,
+    prefix="/ai-attack-paths",
+    tags=["AI Attack Paths"]
 )
 
 

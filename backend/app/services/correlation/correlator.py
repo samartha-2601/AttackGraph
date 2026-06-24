@@ -7,13 +7,52 @@ class Correlator:
 
         title = finding_title.lower()
 
-        if "sql" in title:
+        # SQL Injection
+
+        if (
+            "sql" in title or
+            "tainted-sql" in title
+        ):
             return "SQL Injection"
 
-        if ("xss" in title or "format-string" in title):
+        # XSS
+
+        if (
+            "xss" in title or
+            "format-string" in title
+        ):
             return "Cross Site Scripting"
 
-        if "secret" in title:
+        # GitHub
+
+        if (
+            "github" in title or
+            "github token" in title or
+            "github personal access token" in title
+        ):
+            return "GitHub Token"
+
+        # AWS
+
+        if (
+            title == "aws" or
+            "aws-access-token" in title
+        ):
+            return "AWS Secret"
+
+        # API Keys
+
+        if (
+            "api key" in title or
+            "generic-api-key" in title
+        ):
+            return "API Key"
+
+        # Generic Secrets
+
+        if (
+            "secret" in title
+        ):
             return "Hardcoded Secret"
 
         return "Other"

@@ -19,7 +19,7 @@ def run_scan(
 
     service = ScanService()
 
-    result = service.run_semgrep_scan(
+    result = service.run_all_scanners(
         db,
         "../vulnerable-app"
     )

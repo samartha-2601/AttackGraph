@@ -2,34 +2,22 @@ from app.models.scan import Scan
 from app.models.finding import Finding
 
 from app.services.scanners.semgrep_scanner import SemgrepScanner
+from app.services.scanners.gitleaks_scanner import GitleaksScanner
 
 
 class ScanService:
 
-    def run_semgrep_scan(
+    def save_findings(
         self,
         db,
-        target
+        scan_id,
+        findings
     ):
 
-        scanner = SemgrepScanner()
-
-        results = scanner.scan(target)
-
-        scan = Scan(
-            project_id=1,
-            tool="semgrep",
-            status="completed"
-        )
-
-        db.add(scan)
-        db.commit()
-        db.refresh(scan)
-
-        for finding in results:
+        for finding in findings:
 
             db_finding = Finding(
-                scan_id=scan.id,
+                scan_id=scan_id,
                 title=finding["title"],
                 severity=finding["severity"],
                 description=finding["description"],
@@ -43,4 +31,50 @@ class ScanService:
 
         db.commit()
 
-        return scan.id, len(results)
+    def run_all_scanners(
+        self,
+        db,
+        target
+    ):
+
+        all_findings = []
+
+        scanners = [
+            SemgrepScanner(),
+            GitleaksScanner()
+        ]
+
+        scan = Scan(
+            project_id=1,
+            tool="multi-scanner",
+            status="completed"
+        )
+
+        db.add(scan)
+        db.commit()
+        db.refresh(scan)
+
+        for scanner in scanners:
+
+            results = scanner.scan(
+                target
+            )
+
+            all_findings.extend(
+                results
+            )
+
+        self.save_findings(
+            db,
+            scan.id,
+            all_findings
+        )
+
+        return {
+            "scan_id": scan.id,
+            "findings": len(all_findings),
+            "tools": [
+                "semgrep",
+                "gitleaks"
+            ]
+        }
